@@ -2,31 +2,25 @@
 // Amir Moeini Rad
 // October 2025
 
-// Main Concept: Bridge Design Pattern
-// With help from Gemini
+// Main Concept: The Bridge Design Pattern
 
 // In this pattern, we separate an abstraction from its implementation so that the two can vary independently.
-// This is useful when both the abstractions and their implementations may change frequently.
 
-// In this example, the Abstraction will be a RemoteControl and the Implementation will be a Device (like a TV or Radio).
+// In this example, the Abstraction is a RemoteControl class and the Implementations are Device classes (like a TV/Radio).
 
 namespace BridgeDP
 {
-    // Defines the interface for implementation classes.
+    // Interface Implementer
     internal interface IDevice
     {
         void PowerOn();
         void PowerOff();
         void SetChannel(int channel);
-    }
+    }    
 
 
-    //-------------------------------------------------
-
-
-    // Concrete Implementor
-    // Implements the Implementor interface with specific functionality.
-    internal class Tv : IDevice
+    // Concrete Implementor    
+    internal class TV : IDevice
     {
         public void PowerOn()
         {
@@ -65,19 +59,13 @@ namespace BridgeDP
     }
 
 
-    //-------------------------------------------------
-
-
-    // Abstraction Class
-    // Holds a reference to the Implementor (IDevice) and defines the high-level logic.
-    // In other words, RemoteControl uses IDevice to perform operations. It is independent of the specific device (TV/Radio/etc).
-    // If we add new devices such as DVD players, we don't need to change RemoteControl and AdvancedRemoteControl.
-    // To summarize, IDevice interface is the bridge that decouples
-    // RemoteControl and AdvancedRemoteControl from the specific device implementations.
+    // Abstraction
+    // RemoteControl uses IDevice to perform operations. It is independent of the specific device (TV/Radio).
+    // The Abstraction class doesn't know whether the Implementation class is TV or Radio.
     internal abstract class RemoteControl
     {
-        // The "bridge" or link to the implementation
-        // IDevice links the RemoteControl (Abstraction) to TV/Radio (Implementation)
+        // The Bridge Link
+        // _device links the RemoteControl (Higher-Level Abstraction) to TV/Radio (Lower-Level Implementation)
         protected IDevice _device;
 
         public RemoteControl(IDevice device)
@@ -85,41 +73,38 @@ namespace BridgeDP
             _device = device;
         }
 
-        public void TogglePower()
-        {
-            // High-level operation that uses the underlying implementation
-            // For simplicity, we'll just power it on here.
+        public void PowerOnDevice()
+        {                      
             _device.PowerOn();
         }
 
-        // Abstract method for concrete abstractions
-        public abstract void NextAction();
+        public void PowerOffDevice()
+        {
+            _device.PowerOff();
+        }
+
+        public abstract void ChangeChannel();
     }
 
 
-    // --- Refined Abstraction Class ---
-    // Extends the Abstraction and adds more sophisticated control.
+    // Refined Abstraction
     internal class AdvancedRemoteControl : RemoteControl
-    {
-        // Again, we use IDevice to link AdvancedRemoteControl to TV/Radio
+    {        
         public AdvancedRemoteControl(IDevice device) : base(device) { }
 
-        public override void NextAction()
+        public override void ChangeChannel()
         {
             _device.SetChannel(5);
         }
 
         public void Mute()
         {
-            Console.WriteLine("Mute button pressed.");            
+            Console.WriteLine("Mute button pressed.");        
         }
-    }
+    }    
 
 
-    //-------------------------------------------------
-
-
-    // Client code
+    // Client
     internal class Program
     {
         static void Main(string[] args)
@@ -128,24 +113,24 @@ namespace BridgeDP
             Console.WriteLine("The Bridge Design Pattern in C#.NET.");
             Console.WriteLine("------------------------------------\n");
 
-
-            // 1. Control a TV with an AdvancedRemoteControl
-            IDevice tv = new Tv();
-            AdvancedRemoteControl advancedTvRemote = new AdvancedRemoteControl(tv);
+            
+            IDevice tv = new TV();
+            AdvancedRemoteControl advancedTvRemote = new(tv);
 
             Console.WriteLine("--- Controlling TV ---");
-            advancedTvRemote.TogglePower(); // Uses the Abstraction (RemoteControl)
-            advancedTvRemote.NextAction();  // Uses the Refined Abstraction (AdvancedRemoteControl)
-            advancedTvRemote.Mute(); // Specific AdvancedRemoteControl action
+            advancedTvRemote.PowerOnDevice();
+            advancedTvRemote.ChangeChannel();
+            advancedTvRemote.Mute();
 
 
-            // 2. Control a Radio with the same AdvancedRemoteControl
+            // Control a Radio with the same AdvancedRemoteControl
             IDevice radio = new Radio();
-            AdvancedRemoteControl advancedRadioRemote = new AdvancedRemoteControl(radio);
+            AdvancedRemoteControl advancedRadioRemote = new(radio);
 
             Console.WriteLine("\n--- Controlling Radio ---");
-            advancedRadioRemote.TogglePower(); // Uses the Abstraction (RemoteControl)
-            advancedRadioRemote.NextAction();  // Uses the Refined Abstraction (AdvancedRemoteControl)         
+            advancedRadioRemote.PowerOnDevice();
+            advancedRadioRemote.ChangeChannel();
+            advancedRadioRemote.PowerOffDevice();
 
 
             Console.WriteLine("\nDone.");
